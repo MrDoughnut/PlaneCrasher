@@ -8,6 +8,8 @@
 import SwiftUI
 import UniformTypeIdentifiers
 import AVFoundation
+var constSpeed: Double = 1.5
+
 
 // MARK: - Triangle Shape
 struct Triangle: Shape {
@@ -37,7 +39,7 @@ struct BouncingTriangle: Identifiable {
 	var state: MovementState = .bouncing
 	
 	let size: CGFloat = 50
-	let speed: CGFloat = 1.75
+	let speed: CGFloat = constSpeed
 
 	/// Updates the triangle's position based on its state and checks for landing.
 	mutating func update(in bounds: CGRect, airfieldLine: [CGPoint]?) {
@@ -459,7 +461,7 @@ struct ContentView: View {
 		let directionVector = CGVector(dx: targetPoint.x - newPosition.x, dy: targetPoint.y - newPosition.y)
 		let magnitude = sqrt(directionVector.dx * directionVector.dx + directionVector.dy * directionVector.dy)
 		
-		let speed: CGFloat = 1.75
+		let speed: CGFloat = constSpeed
 		let velocity = CGVector(dx: (directionVector.dx / magnitude) * speed, dy: (directionVector.dy / magnitude) * speed)
 		
 		let newTriangle = BouncingTriangle(position: newPosition, velocity: velocity)
