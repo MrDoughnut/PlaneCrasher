@@ -357,7 +357,11 @@ struct ContentView: View {
 				.padding()
 			}
 			.frame(width: 300)
+			#if os(macOS)
+			.background(Color(NSColor.windowBackgroundColor))
+			#elseif os(iOS)
 			.background(Color(UIColor.systemBackground))
+			#endif
 			.cornerRadius(20)
 			.shadow(radius: 10)
 		}
