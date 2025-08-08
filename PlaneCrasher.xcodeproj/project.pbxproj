@@ -28,6 +28,7 @@
 		2520E16C2E42C88600C16592 /* macOS.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = macOS.entitlements; sourceTree = "<group>"; };
 		2520E17B2E42F12800C16592 /* 11 Sky's Fury (Thunderbird Battle - Gameplay Version).mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = "11 Sky's Fury (Thunderbird Battle - Gameplay Version).mp3"; sourceTree = "<group>"; };
 		2520E17E2E42F45300C16592 /* explosion.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = explosion.wav; sourceTree = "<group>"; };
+		256C35282E4690F300D82F3E /* PlaneCrasher--iOS--Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = "PlaneCrasher--iOS--Info.plist"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -51,6 +52,7 @@
 		2520E1572E42C88400C16592 = {
 			isa = PBXGroup;
 			children = (
+				256C35282E4690F300D82F3E /* PlaneCrasher--iOS--Info.plist */,
 				2520E15C2E42C88400C16592 /* Shared */,
 				2520E16B2E42C88600C16592 /* macOS */,
 				2520E1652E42C88600C16592 /* Products */,
@@ -324,6 +326,8 @@
 				DEVELOPMENT_TEAM = 548GC3Z93F;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "PlaneCrasher--iOS--Info.plist";
+				INFOPLIST_KEY_LSSupportsOpeningDocumentsInPlace = YES;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -354,6 +358,8 @@
 				DEVELOPMENT_TEAM = 548GC3Z93F;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "PlaneCrasher--iOS--Info.plist";
+				INFOPLIST_KEY_LSSupportsOpeningDocumentsInPlace = YES;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;

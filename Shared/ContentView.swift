@@ -39,7 +39,7 @@ struct BouncingTriangle: Identifiable {
 	var state: MovementState = .bouncing
 	
 	let size: CGFloat = 50
-	let speed: CGFloat = constSpeed
+	let speed: CGFloat = 1.75
 
 	/// Updates the triangle's position based on its state and checks for landing.
 	mutating func update(in bounds: CGRect, airfieldLine: [CGPoint]?) {
@@ -140,6 +140,7 @@ struct ContentView: View {
 	@State private var selectedTriangleID: UUID?
 	@State private var backgroundImage: Image?
 	@State private var originalImageSize: CGSize?
+	@State private var backgroundImageData: Data?
 	@State private var imageFrame: CGRect = .zero
 	
 	@State private var airfieldLine: [CGPoint]?
@@ -148,9 +149,16 @@ struct ContentView: View {
 	
 	@State private var score: Int = 0
 	@State private var isGameOver: Bool = false
+	@State private var showControlButtons: Bool = false // State to toggle control buttons
 	
 	@State private var audioPlayer: AVAudioPlayer?
-	@State private var explosionPlayer: AVAudioPlayer? // Player for the explosion sound
+	@State private var explosionPlayer: AVAudioPlayer?
+	
+	// States for Save/Load UI
+	@State private var isShowingSaveAlert: Bool = false
+	@State private var saveFilename: String = ""
+	@State private var isShowingLoadImporter: Bool = false
+	@State private var highScore: Int = 0 // High score for the current airport
 	
 	#if os(iOS)
 	@State private var isShowingImagePicker = false
@@ -185,6 +193,9 @@ struct ContentView: View {
 					.cornerRadius(10)
 				}
 			}
+			if isShowingSaveAlert {
+							saveAlertView
+						}
 		}
 	}
 	
@@ -257,87 +268,185 @@ struct ContentView: View {
 		.ignoresSafeArea()
 		.navigationTitle("PlaneCrasher")
 		.overlay(alignment: .topLeading) {
-			Text("Score: \(score)")
-				.font(.title)
-				.fontWeight(.bold)
-				.foregroundColor(.black)
-				.padding(12)
-				.background(.thinMaterial, in: Capsule())
-				.padding()
+			VStack(alignment: .leading) {
+				Text("Score: \(score)")
+					.font(.title).fontWeight(.bold).foregroundColor(.black)
+				Text("High Score: \(highScore)")
+					.font(.headline).fontWeight(.semibold).foregroundColor(.black)
+			}
+			.padding(12).background(.thinMaterial, in: RoundedRectangle(cornerRadius: 15)).padding()
+			.onTapGesture { withAnimation { self.showControlButtons.toggle() } }
 		}
 		.overlay(alignment: .bottom) {
-			HStack {
+					if showControlButtons {
+						HStack {
+							#if os(iOS)
+							Button { self.isShowingImagePicker = true } label: { Label("Background", systemImage: "arkit") }
+							#endif
+							Button { self.inputMode = .selectingAirfieldPoint1; self.airfieldLine = nil } label: { Label("Airfield", systemImage: "airplane.departure") }
+							Button { self.isShowingSaveAlert = true } label: { Label("Save", systemImage: "square.and.arrow.down") }
+							Button { self.isShowingLoadImporter = true } label: { Label("Load", systemImage: "square.and.arrow.up") }
+											}
+						.padding().background(.thinMaterial, in: Capsule()).padding()
+						.transition(.move(edge: .bottom).combined(with: .opacity))
+					}
+				}
 				#if os(iOS)
-				Button {
-					self.isShowingImagePicker = true
-				} label: {
-					Label("Select Background", systemImage: "photo")
+						.sheet(isPresented: $isShowingImagePicker) { ImagePicker(image: self.$inputImage) }
+						.fileImporter(isPresented: $isShowingLoadImporter, allowedContentTypes: [.json]) { result in
+							switch result {
+							case .success(let url): loadGame(from: url)
+							case .failure(let error): print("Failed to load file: \(error.localizedDescription)")
+							}
+						}
+						.onChange(of: inputImage) { newImage in
+							guard let newImage = newImage else { return }
+							self.backgroundImageData = newImage.pngData()
+							self.backgroundImage = Image(uiImage: newImage)
+							self.originalImageSize = newImage.size
+						}
+						#elseif os(macOS)
+						.onDrop(of: [UTType.fileURL], isTargeted: nil) { providers in
+							guard let provider = providers.first else { return false }
+							_ = provider.loadObject(ofClass: URL.self) { url, error in
+								if let url = url, let image = NSImage(contentsOf: url) {
+									DispatchQueue.main.async {
+										self.backgroundImageData = image.tiffRepresentation
+										self.backgroundImage = Image(nsImage: image)
+										self.originalImageSize = image.size
+									}
+								}
+							}
+							return true
+						}
+						#endif
+	}
+	var gameOverOverlay: some View {
+			Color.black.opacity(0.75).ignoresSafeArea()
+				.overlay(
+					VStack {
+						Text("Game Over").font(.largeTitle).fontWeight(.bold).foregroundColor(.red)
+						Text("Final Score: \(score)").font(.title2).foregroundColor(.white)
+						if score > highScore {
+							Text("New High Score!").font(.title3).foregroundColor(.yellow).padding(.bottom, 20)
+						} else {
+							Text("High Score: \(highScore)").font(.subheadline).foregroundColor(.white).padding(.bottom, 40)
+						}
+						Button("Restart") { restartGame() }
+							.font(.title).padding().background(Color.white).foregroundColor(.black).cornerRadius(10)
+					}
+				)
+		}
+	
+	
+	var saveAlertView: some View {
+			VStack {
+				Text("Save Game").font(.headline).padding()
+				TextField("Enter filename", text: $saveFilename).textFieldStyle(RoundedBorderTextFieldStyle()).padding()
+				HStack {
+					Button("Cancel") { isShowingSaveAlert = false; saveFilename = "" }
+					Spacer()
+					Button("Save") {
+						if !saveFilename.isEmpty {
+							saveGame(filename: saveFilename)
+							isShowingSaveAlert = false
+							saveFilename = ""
+						}
+					}
 				}
-				#endif
-				
-				Button {
-					self.inputMode = .selectingAirfieldPoint1
-					self.airfieldLine = nil
-				} label: {
-					Label("Select Airfield", systemImage: "airplane.departure")
-				}
+				.padding()
 			}
-			.padding()
-			.background(.thinMaterial, in: Capsule())
-			.padding()
+			.frame(width: 300)
+			.background(Color(UIColor.systemBackground))
+			.cornerRadius(20)
+			.shadow(radius: 10)
 		}
-		#if os(iOS)
-		.sheet(isPresented: $isShowingImagePicker) { ImagePicker(image: self.$inputImage) }
-		.onChange(of: inputImage) { newImage in
-			guard let newImage = newImage else { return }
-			self.backgroundImage = Image(uiImage: newImage)
-			self.originalImageSize = newImage.size
-		}
-		#elseif os(macOS)
-		.onDrop(of: [UTType.fileURL], isTargeted: nil) { providers in
-			guard let provider = providers.first else { return false }
+		
+	private func saveGame(filename: String) {
+			// Update high score before saving if the current score is higher
+			let finalHighScore = max(self.highScore, self.score)
+			let saveData = GameSaveData(airfieldLine: self.airfieldLine, backgroundImageData: self.backgroundImageData, highScore: finalHighScore)
 			
-			_ = provider.loadObject(ofClass: URL.self) { url, error in
-				if let url = url, let image = NSImage(contentsOf: url) {
-					DispatchQueue.main.async {
-						self.backgroundImage = Image(nsImage: image)
-						self.originalImageSize = image.size
+			let encoder = JSONEncoder()
+			do {
+				let data = try encoder.encode(saveData)
+				let url = getSavesDirectory().appendingPathComponent("\(filename).json")
+				try data.write(to: url, options: [.atomic, .completeFileProtection])
+				self.highScore = finalHighScore // Ensure the UI reflects the saved high score
+				print("Game saved to \(url.path)")
+			} catch { print("Failed to save game: \(error.localizedDescription)") }
+		}
+		
+		private func loadGame(from url: URL) {
+			#if os(iOS)
+			let gotAccess = url.startAccessingSecurityScopedResource()
+			if !gotAccess { print("Failed to get security access to save file."); return }
+			#endif
+
+			defer {
+				#if os(iOS)
+				url.stopAccessingSecurityScopedResource()
+				#endif
+			}
+			
+			do {
+				let data = try Data(contentsOf: url)
+				let decoder = JSONDecoder()
+				let saveData = try decoder.decode(GameSaveData.self, from: data)
+				
+				self.airfieldLine = saveData.airfieldLine
+				self.backgroundImageData = saveData.backgroundImageData
+				self.highScore = saveData.highScore // Load the high score
+				
+				if let bgData = saveData.backgroundImageData {
+					#if os(iOS)
+					if let uiImage = UIImage(data: bgData) {
+						self.backgroundImage = Image(uiImage: uiImage)
+						self.originalImageSize = uiImage.size
+					}
+					#elseif os(macOS)
+					if let nsImage = NSImage(data: bgData) {
+						self.backgroundImage = Image(nsImage: nsImage)
+						self.originalImageSize = nsImage.size
+					}
+					#endif
+				}
+				restartGame() // Restart the game with the loaded settings
+				print("Game loaded successfully from \(url.lastPathComponent).")
+			} catch { print("Failed to load game: \(error.localizedDescription)") }
+		}
+		
+		private func getSavesDirectory() -> URL {
+			let docsURL = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
+			let appFolderURL = docsURL.appendingPathComponent("PlaneCrasher")
+			if !FileManager.default.fileExists(atPath: appFolderURL.path) {
+				do { try FileManager.default.createDirectory(at: appFolderURL, withIntermediateDirectories: true, attributes: nil) }
+				catch { print("Could not create app documents directory: \(error)") }
+			}
+			return appFolderURL
+		}
+		
+		private func checkForCollisions() {
+			guard triangles.count > 1 else { return }
+			for i in 0..<(triangles.count-1) {
+				for j in (i+1)..<triangles.count {
+					let t1=triangles[i]; let t2=triangles[j]
+					let dx=t1.position.x-t2.position.x; let dy=t1.position.y-t2.position.y
+					if sqrt(dx*dx+dy*dy) < t1.size {
+						if score > highScore { highScore = score } // Update high score on game over
+						isGameOver=true;
+						playExplosionSound();
+						return
 					}
 				}
 			}
-			return true
 		}
-		#endif
-	}
-	
-	private func checkForCollisions() {
-		guard triangles.count > 1 else { return }
-		
-		for i in 0..<(triangles.count - 1) {
-			for j in (i + 1)..<triangles.count {
-				let triangle1 = triangles[i]
-				let triangle2 = triangles[j]
-				
-				let dx = triangle1.position.x - triangle2.position.x
-				let dy = triangle1.position.y - triangle2.position.y
-				let distance = sqrt(dx * dx + dy * dy)
-				
-				if distance < triangle1.size {
-					isGameOver = true
-					playExplosionSound() // Play explosion sound
-					// Soundtrack is no longer stopped here.
-					return
-				}
-			}
-		}
-	}
 	
 	private func restartGame() {
 		score = 0
 		triangles.removeAll()
 		isGameOver = false
 		
-		// Soundtrack continues playing or restarts if it was stopped.
 		if audioPlayer?.isPlaying == false {
 			audioPlayer?.currentTime = 0
 			audioPlayer?.play()
@@ -461,7 +570,7 @@ struct ContentView: View {
 		let directionVector = CGVector(dx: targetPoint.x - newPosition.x, dy: targetPoint.y - newPosition.y)
 		let magnitude = sqrt(directionVector.dx * directionVector.dx + directionVector.dy * directionVector.dy)
 		
-		let speed: CGFloat = constSpeed
+		let speed: CGFloat = 1.75
 		let velocity = CGVector(dx: (directionVector.dx / magnitude) * speed, dy: (directionVector.dy / magnitude) * speed)
 		
 		let newTriangle = BouncingTriangle(position: newPosition, velocity: velocity)
