@@ -141,9 +141,12 @@ class BouncingTriangle {
     }
 
     contains(x, y) {
-        const halfSize = this.size / 2;
-        return x >= this.position.x - halfSize && x <= this.position.x + halfSize &&
-               y >= this.position.y - halfSize && y <= this.position.y + halfSize;
+        // Adds 25 pixels of invisible clickable area on all sides of the triangle
+        const touchPadding = 25; 
+        const paddedHalfSize = (this.size / 2) + touchPadding;
+        
+        return x >= this.position.x - paddedHalfSize && x <= this.position.x + paddedHalfSize &&
+               y >= this.position.y - paddedHalfSize && y <= this.position.y + paddedHalfSize;
     }
 
     draw(ctx) {
@@ -318,12 +321,17 @@ function resetGame() {
     score = 0;
     scoreValue.innerText = score;
     triangles = [];
-    airfieldLine = null;
+    
+    // CRITICAL: We removed "airfieldLine = null;" here so it doesn't 
+    // delete the airfield you drew on the start screen!
+    
     gameOverScreen.classList.add('hidden');
     
+    clearInterval(spawnIntervalId);
     spawnIntervalId = setInterval(spawnTriangle, 2000);
-    spawnTriangle(); // Spawn first immediately
-    update();
+    spawnTriangle(); 
+    
+    // CRITICAL: We removed the "update();" call from here.
 }
 
 // --- UI Button Listeners ---
@@ -349,3 +357,7 @@ imageUploader.addEventListener('change', (e) => {
         reader.readAsDataURL(file);
     }
 });
+
+// Start the rendering engine immediately on page load so 
+// backgrounds and airfields draw before the game starts.
+update();

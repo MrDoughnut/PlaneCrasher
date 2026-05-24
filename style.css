@@ -52,14 +52,15 @@ body, html {
 }
 
 /* Replicating SwiftUI's .background(.thinMaterial, in: Capsule()) */
+/* 1. Find .ui-element and change the z-index from 10 to 30 */
 .ui-element {
     position: absolute;
     background: var(--material-bg);
     -webkit-backdrop-filter: var(--material-blur);
     backdrop-filter: var(--material-blur);
-    border-radius: 9999px; /* Capsule shape */
+    border-radius: 9999px;
     box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-    z-index: 10;
+    z-index: 30; /* CRITICAL: Elevates buttons above the start screen */
     color: #000;
 }
 
@@ -126,9 +127,15 @@ body, html {
     color: white;
 }
 
+/* 2. Find #startScreen and update it to allow clicks to pass through */
 #startScreen {
-    background-color: #111111;
-    color: white;
+    background-color: rgba(17, 17, 17, 0.85); /* Makes it slightly transparent */
+    pointer-events: none; /* CRITICAL: Lets user tap the canvas behind it */
+}
+
+/* 3. Add this completely NEW rule right below #startScreen */
+#startScreen h1, #startScreen p, #startScreen button {
+    pointer-events: auto; /* Ensures the "Tap to Play" button still works! */
 }
 
 .overlay h1 {
