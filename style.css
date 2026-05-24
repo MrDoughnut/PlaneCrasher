@@ -73,11 +73,14 @@ body, html {
     font-weight: bold;
 }
 
-/* Bottom Controls Overlay */
+/* Top Controls Overlay */
 #controlsContainer {
-    bottom: max(20px, env(safe-area-inset-bottom));
-    left: 50%;
-    transform: translateX(-50%);
+    /* Anchors to the top instead of the bottom, respecting the mobile notch */
+    top: max(20px, env(safe-area-inset-top));
+    
+    /* Anchors to the right side to avoid hitting the score display on the left */
+    right: max(20px, env(safe-area-inset-right));
+    
     display: flex;
     gap: 20px;
     padding: 10px 20px;
