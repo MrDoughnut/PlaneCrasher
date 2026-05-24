@@ -4,4 +4,7 @@ simple ATC game that lets YOU load in any background picture (such as YUL airpor
 
 
 Music:
-"Sky's Fury (Thunderbird Battle - Gameplay Version)" by Otto Nelson from "The Sounds of Tombs & Treasures"
+"Sky's Fury (Thunderbird Battle - Gameplay Version)" Composed by Otto Nelson 
+
+GitHub:
+https://github.com/MrDoughnut/planecrasher/tree/WebApplication
