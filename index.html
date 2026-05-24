@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    
+    <meta name="theme-color" content="#000000">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="PlaneCrasher">
+    
+    <title>PlaneCrasher</title>
+    
+    <link rel="manifest" href="manifest.json">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="gameContainer">
+        <canvas id="gameCanvas"></canvas>
+        
+        <div id="scoreDisplay" class="ui-element">Score: <span id="scoreValue">0</span></div>
+        
+        <div id="controlsContainer" class="ui-element">
+            <button id="uploadBtn" class="control-btn">
+                <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>
+                <span>Background</span>
+            </button>
+            <button id="airfieldBtn" class="control-btn">
+                <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none"><path d="M17.8 19.2 16 11l3.5-3.5C21 6 21.5 4 21 3c-1-.5-3 0-4.5 1.5L13 8 4.8 6.2c-.5-.1-.9.2-1.1.7l-1.2 3.3c-.2.5.1 1 .6 1.1l7.3 2-2.8 2.8-3.2-.8c-.4-.1-.8.2-1 .6L2.2 18c-.2.4 0 .9.4 1l4.2 1.1 1.1 4.2c.1.4.6.6 1 .4l2.1-1.2c.4-.2.7-.6.6-1l-.8-3.2 2.8-2.8 2 7.3c.1.5.6.8 1.1.6l3.3-1.2c.5-.2.8-.6.7-1.1z"/></svg>
+                <span>Select Airfield</span>
+            </button>
+        </div>
+        
+        <div id="gameOverScreen" class="overlay hidden">
+            <h1>Game Over</h1>
+            <p>Final Score: <span id="finalScore">0</span></p>
+            <button id="restartBtn" class="action-btn">Restart</button>
+        </div>
+        
+        <div id="startScreen" class="overlay">
+            <h1>PlaneCrasher</h1>
+            <p>Draw paths. Guide planes to the airfield. Avoid collisions.</p>
+            <button id="startBtn" class="action-btn">Tap to Play</button>
+        </div>
+    </div>
+
+    <input type="file" id="imageUploader" accept="image/*" style="display: none;">
+
+    <script src="game.js"></script>
+    
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/sw.js').then(registration => {
+                    console.log('ServiceWorker registration successful with scope: ', registration.scope);
+                }).catch(err => {
+                    console.log('ServiceWorker registration failed: ', err);
+                });
+            });
+        }
+    </script>
+</body>
+</html>

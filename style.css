@@ -1,0 +1,172 @@
+/* style.css */
+
+/* Core variables to replicate Apple's native UI look */
+:root {
+    --system-font: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    --material-bg: rgba(255, 255, 255, 0.75);
+    --material-blur: blur(12px);
+}
+
+/* Base Reset */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body, html {
+    width: 100%;
+    height: 100%;
+    font-family: var(--system-font);
+    background-color: #000;
+    
+    /* CRITICAL MOBILE GAME SETTINGS */
+    /* Prevents pull-to-refresh, pinch-to-zoom, and scrolling bounce */
+    overflow: hidden;
+    touch-action: none;
+    user-select: none;
+    -webkit-user-select: none;
+    -webkit-touch-callout: none;
+}
+
+/* Main Container */
+#gameContainer {
+    position: relative;
+    width: 100vw;
+    height: 100vh;
+    background-color: #ffffff; /* Replicates Color.white */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+}
+
+/* The Canvas */
+#gameCanvas {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: block;
+}
+
+/* Replicating SwiftUI's .background(.thinMaterial, in: Capsule()) */
+.ui-element {
+    position: absolute;
+    background: var(--material-bg);
+    -webkit-backdrop-filter: var(--material-blur);
+    backdrop-filter: var(--material-blur);
+    border-radius: 9999px; /* Capsule shape */
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    z-index: 10;
+    color: #000;
+}
+
+/* Top Left Score Overlay */
+#scoreDisplay {
+    /* env() handles the notch/dynamic island on modern devices */
+    top: max(20px, env(safe-area-inset-top));
+    left: max(20px, env(safe-area-inset-left));
+    padding: 12px 20px;
+    font-size: 1.5rem;
+    font-weight: bold;
+}
+
+/* Bottom Controls Overlay */
+#controlsContainer {
+    bottom: max(20px, env(safe-area-inset-bottom));
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 20px;
+    padding: 10px 20px;
+}
+
+/* Native-feeling text buttons with icons */
+.control-btn {
+    background: none;
+    border: none;
+    color: #007aff; /* Standard iOS Blue */
+    font-size: 1rem;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    padding: 8px 4px;
+    font-family: inherit;
+}
+
+.control-btn:active {
+    opacity: 0.5;
+}
+
+/* Full Screen Overlays (Start & Game Over) */
+.overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    z-index: 20;
+    text-align: center;
+}
+
+#gameOverScreen {
+    /* Replicates Color.black.opacity(0.75) */
+    background-color: rgba(0, 0, 0, 0.75); 
+    color: white;
+}
+
+#startScreen {
+    background-color: #111111;
+    color: white;
+}
+
+.overlay h1 {
+    font-size: 2.5rem;
+    font-weight: bold;
+    margin-bottom: 10px;
+}
+
+#gameOverScreen h1 {
+    color: #ff3b30; /* Standard iOS Red */
+}
+
+.overlay p {
+    font-size: 1.25rem;
+    margin-bottom: 40px;
+    max-width: 80%;
+    line-height: 1.4;
+}
+
+/* Big Action Buttons (Restart / Tap to Play) */
+.action-btn {
+    background-color: white;
+    color: black;
+    border: none;
+    border-radius: 10px;
+    padding: 15px 40px;
+    font-size: 1.5rem;
+    font-weight: bold;
+    cursor: pointer;
+    font-family: inherit;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+    /* Ensure a large enough tap target for mobile */
+    min-width: 200px; 
+}
+
+.action-btn:active {
+    background-color: #e5e5ea;
+    transform: scale(0.98);
+}
+
+/* Utility to toggle visibility cleanly */
+.hidden {
+    display: none !important;
+}
