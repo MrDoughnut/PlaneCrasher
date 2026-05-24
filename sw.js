@@ -12,8 +12,8 @@ const URLS_TO_CACHE = [
     // Note: ensure these match exactly what you name them in your assets folder
     '/assets/explosion.wav',
     '/assets/background-music.mp3',
-    '/assets/icon-192.png',
-    '/assets/icon-512.png'
+    '/assets/KilroyWasHere180.png',
+    '/assets/KilroyWasHere512.png'
 ];
 
 // Install Event - Caches the files
