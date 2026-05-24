@@ -151,14 +151,32 @@ class BouncingTriangle {
 
     draw(ctx) {
         const halfSize = this.size / 2;
+        
+        // 1. Calculate the angle of movement based on velocity
+        // We add Math.PI / 2 (90 degrees) because the original triangle is drawn 
+        // pointing "UP", but 0 degrees in canvas math points "RIGHT".
+        const angle = Math.atan2(this.velocity.dy, this.velocity.dx) + (Math.PI / 2);
+
+        // 2. Save the current un-rotated canvas state
+        ctx.save();
+        
+        // 3. Move the canvas origin to the exact center of this specific triangle
+        ctx.translate(this.position.x, this.position.y);
+        
+        // 4. Rotate the canvas by our calculated angle
+        ctx.rotate(angle);
+
+        // 5. Draw the triangle centered around (0, 0) instead of its world position
         ctx.fillStyle = '#FF2D55'; // SwiftUI .pink
         ctx.beginPath();
-        // Matching SwiftUI Triangle struct
-        ctx.moveTo(this.position.x, this.position.y - halfSize);
-        ctx.lineTo(this.position.x + halfSize, this.position.y + halfSize);
-        ctx.lineTo(this.position.x - halfSize, this.position.y + halfSize);
+        ctx.moveTo(0, -halfSize);              // Pointy nose (Forward)
+        ctx.lineTo(halfSize, halfSize);        // Bottom right wing
+        ctx.lineTo(-halfSize, halfSize);       // Bottom left wing
         ctx.closePath();
         ctx.fill();
+
+        // 6. Restore the canvas state so we don't accidentally rotate the next triangle
+        ctx.restore();
     }
 }
 
