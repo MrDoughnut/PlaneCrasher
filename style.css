@@ -129,7 +129,7 @@ body, html {
 
 /* 2. Find #startScreen and update it to allow clicks to pass through */
 #startScreen {
-    background-color: rgba(17, 17, 255, 0.85); /* Makes it slightly transparent */ /*all are 17*/
+    background-color: rgba(255, 17, 255, 0.85); /* Makes it slightly transparent */ /*all are 17*/
     pointer-events: none; /* CRITICAL: Lets user tap the canvas behind it */
 }
 
