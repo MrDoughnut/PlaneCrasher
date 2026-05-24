@@ -142,7 +142,7 @@ class BouncingTriangle {
 
     contains(x, y) {
         // Adds 25 pixels of invisible clickable area on all sides of the triangle
-        const touchPadding = 100000; 
+        const touchPadding = 500; 
         const paddedHalfSize = (this.size / 2) + touchPadding;
         
         return x >= this.position.x - paddedHalfSize && x <= this.position.x + paddedHalfSize &&
