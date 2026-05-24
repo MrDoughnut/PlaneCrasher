@@ -14,6 +14,8 @@ const imageUploader = document.getElementById('imageUploader');
 const airfieldBtn = document.getElementById('airfieldBtn');
 const gameContainer = document.getElementById('gameContainer');
 
+const creditsBtn = document.getElementById('creditsBtn');
+
 // --- Game State ---
 let triangles = [];
 let score = 0;
@@ -327,11 +329,16 @@ function gameOver() {
     cancelAnimationFrame(animationFrameId);
     clearInterval(spawnIntervalId);
     
-    // Play explosion. Note: cloneNode allows multiple rapid explosions if needed
-    explosionSound.cloneNode(true).play().catch(e => console.log(e));
+    // Play explosion sound effect instantly
+    // cloneNode(true) ensures if two planes crash at the exact same millisecond, 
+    // or if you crash rapidly, the audio file overlaps and plays successfully every time.
+    explosionSound.cloneNode(true).play().catch(e => console.log("Audio blocked: ", e));
     
     finalScore.innerText = score;
+    
+    // Show menus and the credits button again
     gameOverScreen.classList.remove('hidden');
+    creditsBtn.classList.remove('hidden');
 }
 
 function resetGame() {
@@ -340,15 +347,14 @@ function resetGame() {
     scoreValue.innerText = score;
     triangles = [];
     
-    // We keep airfieldLine intact so it doesn't delete your drawing
+    // Hide menus and the credits button when the game is active
     gameOverScreen.classList.add('hidden');
+    creditsBtn.classList.add('hidden');
     
     clearInterval(spawnIntervalId);
     spawnIntervalId = setInterval(spawnTriangle, 2000);
     spawnTriangle(); 
     
-    // Safely kickstart the rendering engine again!
-    // The cancelAnimationFrame ensures we don't accidentally run two loops at once.
     cancelAnimationFrame(animationFrameId);
     update();
 }
