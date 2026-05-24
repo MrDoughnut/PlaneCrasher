@@ -142,7 +142,7 @@ class BouncingTriangle {
 
     contains(x, y) {
         // Adds 25 pixels of invisible clickable area on all sides of the triangle
-        const touchPadding = 100; 
+        const touchPadding = 200; 
         const paddedHalfSize = (this.size / 2) + touchPadding;
         
         return x >= this.position.x - paddedHalfSize && x <= this.position.x + paddedHalfSize &&
@@ -322,16 +322,17 @@ function resetGame() {
     scoreValue.innerText = score;
     triangles = [];
     
-    // CRITICAL: We removed "airfieldLine = null;" here so it doesn't 
-    // delete the airfield you drew on the start screen!
-    
+    // We keep airfieldLine intact so it doesn't delete your drawing
     gameOverScreen.classList.add('hidden');
     
     clearInterval(spawnIntervalId);
     spawnIntervalId = setInterval(spawnTriangle, 2000);
     spawnTriangle(); 
     
-    // CRITICAL: We removed the "update();" call from here.
+    // Safely kickstart the rendering engine again!
+    // The cancelAnimationFrame ensures we don't accidentally run two loops at once.
+    cancelAnimationFrame(animationFrameId);
+    update();
 }
 
 // --- UI Button Listeners ---
