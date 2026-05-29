@@ -151,33 +151,33 @@ class BouncingTriangle {
                y >= this.position.y - paddedHalfSize && y <= this.position.y + paddedHalfSize;
     }
 
-    draw(ctx) {
+    draw(ctx, isSelected = false) {
         const halfSize = this.size / 2;
-        
-        // 1. Calculate the angle of movement based on velocity
-        // We add Math.PI / 2 (90 degrees) because the original triangle is drawn 
-        // pointing "UP", but 0 degrees in canvas math points "RIGHT".
         const angle = Math.atan2(this.velocity.dy, this.velocity.dx) + (Math.PI / 2);
 
-        // 2. Save the current un-rotated canvas state
         ctx.save();
-        
-        // 3. Move the canvas origin to the exact center of this specific triangle
         ctx.translate(this.position.x, this.position.y);
-        
-        // 4. Rotate the canvas by our calculated angle
+
+        // NEW: Draw the yellow selection ring if this plane is currently selected
+        if (isSelected) {
+            ctx.strokeStyle = '#FFCC00'; // Standard iOS Yellow
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            // We make the radius slightly larger than the triangle (halfSize + 8)
+            ctx.arc(0, 0, halfSize + 8, 0, Math.PI * 2); 
+            ctx.stroke();
+        }
+
         ctx.rotate(angle);
 
-        // 5. Draw the triangle centered around (0, 0) instead of its world position
         ctx.fillStyle = '#FF2D55'; // SwiftUI .pink
         ctx.beginPath();
-        ctx.moveTo(0, -halfSize);              // Pointy nose (Forward)
-        ctx.lineTo(halfSize, halfSize);        // Bottom right wing
-        ctx.lineTo(-halfSize, halfSize);       // Bottom left wing
+        ctx.moveTo(0, -halfSize);              
+        ctx.lineTo(halfSize, halfSize);        
+        ctx.lineTo(-halfSize, halfSize);       
         ctx.closePath();
         ctx.fill();
 
-        // 6. Restore the canvas state so we don't accidentally rotate the next triangle
         ctx.restore();
     }
 }
@@ -260,7 +260,11 @@ function update() {
             ctx.stroke();
         }
 
-        tri.draw(ctx);
+        // Change this line:
+        // tri.draw(ctx);
+        
+        // To this:
+        tri.draw(ctx, tri === selectedTriangle);
     }
 
     checkCollisions();
