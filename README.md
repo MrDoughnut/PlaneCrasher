@@ -9,5 +9,5 @@ Music:
 GitHub:
 https://github.com/MrDoughnut/planecrasher/tree/WebApplication
 
-GitHub for William Malone's code:
+GitHub for William Malone's code for drawing lines:
 https://github.com/williammalone/Simple-HTML5-Drawing-App
