@@ -53,12 +53,25 @@ function initBackgroundImage() {
         img.src = savedBg;
         airfieldLine = null; 
     } else {
-        // First-time load: Use default YUL map and inject the exact runway coordinates
+        // First-time load: Use default YUL map and inject responsive coordinates
         img.src = 'assets/YULairport.png';
-        airfieldLine = [
-            { x: 519, y: 463 },
-            { x: 590, y: 440 }
-        ];
+        
+        // Wait until the image loads and canvas is sized to calculate actual pixels
+        setTimeout(() => {
+            airfieldLine = [
+                { x: canvas.width * 0.390, y: canvas.height * 0.745 },
+                { x: canvas.width * 0.455, y: canvas.height * 0.720 }
+            ];
+            // airfieldLine = [ // 1440x900
+            //     { x: 560, y: 673 },
+            //     { x: 650, y: 650 }
+            // ];
+            // airfieldLine = [ // 1920x180
+            //     { x: 750, y: 800 },
+            //     { x: 880, y: 775 }
+            // ];
+        }, 100); // Brief timeout ensures canvas dimensions are fully set
+        
     }
 }
 
