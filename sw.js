@@ -1,6 +1,6 @@
 // sw.js
 
-const CACHE_NAME = 'planecrasher-cache-v1';
+const CACHE_NAME = 'planecrasher-cache-v2';
 
 // Add the names of all the files you want to work offline
 const URLS_TO_CACHE = [
@@ -13,7 +13,8 @@ const URLS_TO_CACHE = [
     '/assets/explosion.wav',
     '/assets/background-music.mp3',
     '/assets/KilroyWasHere180.png',
-    '/assets/KilroyWasHere512.png'
+    '/assets/KilroyWasHere512.png',
+    '/assets/YULairport.png' // <-- ADD THIS LINE
 ];
 
 // Install Event - Caches the files

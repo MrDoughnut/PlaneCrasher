@@ -39,6 +39,33 @@ const bgMusic = new Audio('assets/background-music.mp3');
 bgMusic.loop = true;
 const explosionSound = new Audio('assets/explosion.wav');
 
+// --- Background Image Management ---
+function initBackgroundImage() {
+    const savedBg = localStorage.getItem('planecrasher_saved_bg');
+    const img = new Image();
+    
+    img.onload = () => { 
+        backgroundImage = img; 
+    };
+    
+    if (savedBg) {
+        // User has a custom background. Load it, and leave airfield blank.
+        img.src = savedBg;
+        airfieldLine = null; 
+    } else {
+        // First-time load: Use default YUL map and inject the exact runway coordinates
+        img.src = 'assets/YULairport.png';
+        airfieldLine = [
+            { x: 519, y: 463 },
+            { x: 590, y: 440 }
+        ];
+    }
+}
+
+// Call it immediately so the background is ready before the first frame draws
+initBackgroundImage();
+
+
 // --- Canvas Resizing for Mobile ---
 function resizeCanvas() {
     // Handle high-DPI retina displays for sharp rendering
@@ -442,9 +469,21 @@ imageUploader.addEventListener('change', (e) => {
     if (file) {
         const reader = new FileReader();
         reader.onload = function(event) {
+            const dataUrl = event.target.result;
+            
+            // 1. Update the live game background
             const img = new Image();
             img.onload = () => { backgroundImage = img; };
-            img.src = event.target.result;
+            img.src = dataUrl;
+            
+            // 2. Save it to localStorage for the next time they open the game
+            try {
+                localStorage.setItem('planecrasher_saved_bg', dataUrl);
+            } catch (err) {
+                // localStorage has a ~5MB limit. If they upload a massive 4K image, 
+                // it will fail to save, but the live game will still work for this session.
+                console.warn("Image too large to save for future sessions.", err);
+            }
         }
         reader.readAsDataURL(file);
     }
