@@ -8,3 +8,6 @@ Music:
 
 GitHub:
 https://github.com/MrDoughnut/planecrasher/tree/WebApplication
+
+GitHub for William Malone's code:
+https://github.com/williammalone/Simple-HTML5-Drawing-App
