@@ -143,12 +143,14 @@ class BouncingTriangle {
     }
 
     contains(x, y) {
-        // Adds 25 pixels of invisible clickable area on all sides of the triangle
-        const touchPadding = 25; 
-        const paddedHalfSize = (this.size / 2) + touchPadding;
+        // Calculate the exact distance from the touch point to the center of the plane
+        const distance = Math.hypot(this.position.x - x, this.position.y - y);
         
-        return x >= this.position.x - paddedHalfSize && x <= this.position.x + paddedHalfSize &&
-               y >= this.position.y - paddedHalfSize && y <= this.position.y + paddedHalfSize;
+        // Match this perfectly to your visual circle: (halfSize + 8)
+        const hitboxRadius = (this.size / 2) + 8;
+        
+        // Return true only if the touch is inside that exact circular radius
+        return distance <= hitboxRadius;
     }
 
     draw(ctx, isSelected = false) {
