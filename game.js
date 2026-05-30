@@ -64,18 +64,22 @@ class BouncingTriangle {
         this.speed = 1.75;
     }
 
-    update(bounds, airfield) {
+    update(bounds, airfield, isSelected = false) {
+        // Apply a 50% speed penalty if selected, otherwise 100% speed
+        const speedMultiplier = isSelected ? 0.5 : 1.0;
+
         if (this.state === 'bouncing') {
-            this.updateBouncing(bounds);
+            this.updateBouncing(bounds, speedMultiplier);
         } else if (this.state === 'followingPath') {
-            this.updatePathFollowing();
+            this.updatePathFollowing(speedMultiplier);
         }
         this.checkForLanding(airfield);
     }
 
-    updateBouncing(bounds) {
-        this.position.x += this.velocity.dx;
-        this.position.y += this.velocity.dy;
+    updateBouncing(bounds, speedMultiplier) {
+        // Multiply the velocity applied this frame by our speed modifier
+        this.position.x += this.velocity.dx * speedMultiplier;
+        this.position.y += this.velocity.dy * speedMultiplier;
 
         const halfSize = this.size / 2;
         // Bounce off edges
@@ -89,7 +93,7 @@ class BouncingTriangle {
         }
     }
 
-    updatePathFollowing() {
+    updatePathFollowing(speedMultiplier) {
         if (this.path.length === 0 || this.pathIndex >= this.path.length) {
             this.state = 'bouncing';
             return;
@@ -115,8 +119,9 @@ class BouncingTriangle {
             }
         } else {
             this.velocity = { dx: (dx / distance) * this.speed, dy: (dy / distance) * this.speed };
-            this.position.x += this.velocity.dx;
-            this.position.y += this.velocity.dy;
+            // Multiply the velocity applied this frame by our speed modifier
+            this.position.x += this.velocity.dx * speedMultiplier;
+            this.position.y += this.velocity.dy * speedMultiplier;
         }
     }
 
@@ -241,7 +246,11 @@ function update() {
     // Process Triangles
     for (let i = triangles.length - 1; i >= 0; i--) {
         const tri = triangles[i];
-        tri.update(bounds, airfieldLine);
+        // Change this line:
+        // tri.update(bounds, airfieldLine);
+        
+        // To this:
+        tri.update(bounds, airfieldLine, tri === selectedTriangle);
 
         if (tri.isLanded) {
             score++;
