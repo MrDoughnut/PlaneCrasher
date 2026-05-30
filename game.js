@@ -13,6 +13,9 @@ const uploadBtn = document.getElementById('uploadBtn');
 const imageUploader = document.getElementById('imageUploader');
 const airfieldBtn = document.getElementById('airfieldBtn');
 const gameContainer = document.getElementById('gameContainer');
+const scoreDisplay = document.getElementById('scoreDisplay');
+const pauseScreen = document.getElementById('pauseScreen');
+const resumeBtn = document.getElementById('resumeBtn');
 
 const creditsBtn = document.getElementById('creditsBtn');
 
@@ -22,6 +25,7 @@ let score = 0;
 let isGameOver = false;
 let animationFrameId;
 let spawnIntervalId;
+let isPaused = false;
 
 // Input Modes: 'normal', 'selectingAirfieldPoint1', 'selectingAirfieldPoint2'
 let inputMode = 'normal';
@@ -50,6 +54,22 @@ function resizeCanvas() {
 }
 window.addEventListener('resize', resizeCanvas);
 resizeCanvas();
+
+// --- Pause Logic ---
+function togglePause() {
+    // Prevent pausing if the game is over or hasn't started yet
+    if (isGameOver || !startScreen.classList.contains('hidden')) return;
+
+    isPaused = !isPaused;
+
+    if (isPaused) {
+        clearInterval(spawnIntervalId); // Stop new planes from spawning
+        pauseScreen.classList.remove('hidden');
+    } else {
+        spawnIntervalId = setInterval(spawnTriangle, 2000); // Resume spawning
+        pauseScreen.classList.add('hidden');
+    }
+}
 
 // --- Bouncing Triangle Class ---
 class BouncingTriangle {
@@ -256,47 +276,43 @@ function update() {
     // Process Triangles
     for (let i = triangles.length - 1; i >= 0; i--) {
         const tri = triangles[i];
-        // Change this line:
-        // tri.update(bounds, airfieldLine);
-        
-        // To this:
-        tri.update(bounds, airfieldLine, tri === selectedTriangle);
 
-        if (tri.isLanded) {
-            score++;
-            scoreValue.innerText = score;
-            triangles.splice(i, 1);
-            continue;
+        // ONLY update physics and landing checks if the game is NOT paused
+        if (!isPaused) {
+            tri.update(bounds, airfieldLine, tri === selectedTriangle);
+
+            if (tri.isLanded) {
+                score++;
+                scoreValue.innerText = score;
+                triangles.splice(i, 1);
+                continue;
+            }
         }
 
-        // Draw Path
         // Draw Path (Using OSS Logic)
         if (tri.state === 'followingPath' && tri.clickX.length > 0 && tri.pathIndex < tri.clickX.length) {
             ctx.strokeStyle = '#AF52DE'; // SwiftUI .purple
             ctx.lineWidth = 3;
             
-            // OSS Logic applied AS IS, starting from the plane's current pathIndex
             for (let j = tri.pathIndex; j < tri.clickX.length; j += 1) {
                 ctx.beginPath();
-                
-                // If dragging and not the first point, connect to the previous point
                 if (tri.clickDrag[j] && j > tri.pathIndex) {
                     ctx.moveTo(tri.clickX[j - 1], tri.clickY[j - 1]);
                 } else {
-                    // Otherwise, offset by 1 pixel to draw a standalone dot
                     ctx.moveTo(tri.clickX[j] - 1, tri.clickY[j]);
                 }
-                
                 ctx.lineTo(tri.clickX[j], tri.clickY[j]);
                 ctx.stroke();
             }
         }
 
-        // Change this line:
-        // tri.draw(ctx);
-        
-        // To this:
+        // Draw Triangle
         tri.draw(ctx, tri === selectedTriangle);
+    }
+
+    // ONLY check collisions if the game is NOT paused
+    if (!isPaused) {
+        checkCollisions();
     }
 
     checkCollisions();
@@ -335,32 +351,36 @@ canvas.addEventListener('pointerdown', (e) => {
         inputMode = 'normal';
         airfieldStartPoint = null;
     } else if (inputMode === 'normal') {
+        // NEW: Block selecting planes if the game is paused
+        if (isPaused) return; 
+
         selectedTriangle = triangles.find(t => t.contains(pos.x, pos.y));
         if (selectedTriangle) {
-            // Reset the OSS arrays
             selectedTriangle.clickX = [];
             selectedTriangle.clickY = [];
             selectedTriangle.clickDrag = [];
             selectedTriangle.pathIndex = 0;
             selectedTriangle.state = 'followingPath';
-            
-            // Record the initial touch (dragging is false)
             selectedTriangle.addClick(pos.x, pos.y, false);
         }
     }
 });
 
 canvas.addEventListener('pointermove', (e) => {
-    if (inputMode !== 'normal' || !selectedTriangle) return;
+    // NEW: Include isPaused in the early return
+    if (inputMode !== 'normal' || !selectedTriangle || isPaused) return;
     
     const pos = getPointerPos(e);
-    // Record continuous movement (dragging is true)
     selectedTriangle.addClick(pos.x, pos.y, true);
 });
 
 canvas.addEventListener('pointerup', () => {
     selectedTriangle = null;
 });
+
+// Event Listeners for Pausing
+scoreDisplay.addEventListener('click', togglePause);
+resumeBtn.addEventListener('click', togglePause);
 
 // --- Game Controls ---
 function startGame() {
@@ -388,13 +408,15 @@ function gameOver() {
 
 function resetGame() {
     isGameOver = false;
+    isPaused = false; // Reset pause state
     score = 0;
     scoreValue.innerText = score;
     triangles = [];
-    
+   
     // Hide menus and the credits button when the game is active
     gameOverScreen.classList.add('hidden');
     creditsBtn.classList.add('hidden');
+    pauseScreen.classList.add('hidden'); // Ensure pause screen hides
     
     clearInterval(spawnIntervalId);
     spawnIntervalId = setInterval(spawnTriangle, 2000);

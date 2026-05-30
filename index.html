@@ -18,7 +18,7 @@
     <div id="gameContainer">
         <canvas id="gameCanvas"></canvas>
         
-        <div id="scoreDisplay" class="ui-element">Score: <span id="scoreValue">0</span></div>
+        <div id="scoreDisplay" class="ui-element" style="cursor: pointer;" title="Tap to Pause">Score: <span id="scoreValue">0</span></div>
         
         <div id="controlsContainer" class="ui-element">
             <button id="uploadBtn" class="control-btn">
@@ -34,6 +34,11 @@
                 <span>Credits</span>
             </a>
         </div>
+
+        <div id="pauseScreen" class="overlay hidden">
+            <h1>Game Paused</h1>
+            <button id="resumeBtn" class="action-btn">Resume</button>
+        </div>
         
         <div id="gameOverScreen" class="overlay hidden">
             <h1>Game Over</h1>
@@ -45,7 +50,7 @@
             <h1>PlaneCrasher</h1>
             <p>tap «Background» choose any image. tap «Select Airfield» and tap the two endpoints of the runway.</p>
             <p>drag planes to land on the runway!</p>
-            <button id="startBtn" class="action-btn">Tap to Play v1.6</button>
+            <button id="startBtn" class="action-btn">Tap to Play</button>
         </div>
     </div>
 
