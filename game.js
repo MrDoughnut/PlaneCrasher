@@ -56,12 +56,21 @@ class BouncingTriangle {
     constructor(x, y, vx, vy) {
         this.position = { x, y };
         this.velocity = { dx: vx, dy: vy };
-        this.path = [];
         this.pathIndex = 0;
         this.isLanded = false;
         this.state = 'bouncing'; // 'bouncing' or 'followingPath'
         this.size = 50;
         this.speed = 1.75;
+        // Replaces this.path = [];
+        this.clickX = [];
+        this.clickY = [];
+        this.clickDrag = [];
+    }
+
+    addClick(x, y, dragging) {
+        this.clickX.push(x);
+        this.clickY.push(y);
+        this.clickDrag.push(dragging);
     }
 
     update(bounds, airfield, isSelected = false) {
@@ -94,24 +103,26 @@ class BouncingTriangle {
     }
 
     updatePathFollowing(speedMultiplier) {
-        if (this.path.length === 0 || this.pathIndex >= this.path.length) {
+        if (this.clickX.length === 0 || this.pathIndex >= this.clickX.length) {
             this.state = 'bouncing';
             return;
         }
 
-        const target = this.path[this.pathIndex];
-        const dx = target.x - this.position.x;
-        const dy = target.y - this.position.y;
+        const targetX = this.clickX[this.pathIndex];
+        const targetY = this.clickY[this.pathIndex];
+        const dx = targetX - this.position.x;
+        const dy = targetY - this.position.y;
         const distance = Math.hypot(dx, dy);
 
         if (distance < 5) {
             this.pathIndex++;
-            // If path ends, calculate momentum for bouncing state
-            if (this.pathIndex >= this.path.length && this.path.length > 1) {
-                const last = this.path[this.path.length - 1];
-                const secondLast = this.path[this.path.length - 2];
-                const dirX = last.x - secondLast.x;
-                const dirY = last.y - secondLast.y;
+            if (this.pathIndex >= this.clickX.length && this.clickX.length > 1) {
+                const lastX = this.clickX[this.clickX.length - 1];
+                const lastY = this.clickY[this.clickY.length - 1];
+                const secondLastX = this.clickX[this.clickX.length - 2];
+                const secondLastY = this.clickY[this.clickY.length - 2];
+                const dirX = lastX - secondLastX;
+                const dirY = lastY - secondLastY;
                 const mag = Math.hypot(dirX, dirY);
                 if (mag > 0) {
                     this.velocity = { dx: (dirX / mag) * this.speed, dy: (dirY / mag) * this.speed };
@@ -119,7 +130,6 @@ class BouncingTriangle {
             }
         } else {
             this.velocity = { dx: (dx / distance) * this.speed, dy: (dy / distance) * this.speed };
-            // Multiply the velocity applied this frame by our speed modifier
             this.position.x += this.velocity.dx * speedMultiplier;
             this.position.y += this.velocity.dy * speedMultiplier;
         }
@@ -260,15 +270,26 @@ function update() {
         }
 
         // Draw Path
-        if (tri.state === 'followingPath' && tri.path.length > 0 && tri.pathIndex < tri.path.length) {
+        // Draw Path (Using OSS Logic)
+        if (tri.state === 'followingPath' && tri.clickX.length > 0 && tri.pathIndex < tri.clickX.length) {
             ctx.strokeStyle = '#AF52DE'; // SwiftUI .purple
             ctx.lineWidth = 3;
-            ctx.beginPath();
-            ctx.moveTo(tri.position.x, tri.position.y);
-            for (let j = tri.pathIndex; j < tri.path.length; j++) {
-                ctx.lineTo(tri.path[j].x, tri.path[j].y);
+            
+            // OSS Logic applied AS IS, starting from the plane's current pathIndex
+            for (let j = tri.pathIndex; j < tri.clickX.length; j += 1) {
+                ctx.beginPath();
+                
+                // If dragging and not the first point, connect to the previous point
+                if (tri.clickDrag[j] && j > tri.pathIndex) {
+                    ctx.moveTo(tri.clickX[j - 1], tri.clickY[j - 1]);
+                } else {
+                    // Otherwise, offset by 1 pixel to draw a standalone dot
+                    ctx.moveTo(tri.clickX[j] - 1, tri.clickY[j]);
+                }
+                
+                ctx.lineTo(tri.clickX[j], tri.clickY[j]);
+                ctx.stroke();
             }
-            ctx.stroke();
         }
 
         // Change this line:
@@ -316,16 +337,25 @@ canvas.addEventListener('pointerdown', (e) => {
     } else if (inputMode === 'normal') {
         selectedTriangle = triangles.find(t => t.contains(pos.x, pos.y));
         if (selectedTriangle) {
-            selectedTriangle.path = [];
+            // Reset the OSS arrays
+            selectedTriangle.clickX = [];
+            selectedTriangle.clickY = [];
+            selectedTriangle.clickDrag = [];
             selectedTriangle.pathIndex = 0;
             selectedTriangle.state = 'followingPath';
+            
+            // Record the initial touch (dragging is false)
+            selectedTriangle.addClick(pos.x, pos.y, false);
         }
     }
 });
 
 canvas.addEventListener('pointermove', (e) => {
     if (inputMode !== 'normal' || !selectedTriangle) return;
-    selectedTriangle.path.push(getPointerPos(e));
+    
+    const pos = getPointerPos(e);
+    // Record continuous movement (dragging is true)
+    selectedTriangle.addClick(pos.x, pos.y, true);
 });
 
 canvas.addEventListener('pointerup', () => {
